@@ -45,6 +45,7 @@ app.post("/auth", async (req, res) => {
 
   res.send({ token: user.token });
 });
+
 //gatekeeper function unless it passes auth
 
 app.use(async (req, res, next) => {
