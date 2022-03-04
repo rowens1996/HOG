@@ -34,7 +34,7 @@ app.use(morgan("combined"));
 app.post("/register", async (req, res) => {
   const newPassword = await bcrypt.hash(req.body.password, 10);
   const user = await User.create({
-    userName: req.body.userName,
+    userName: req.body.username,
     password: newPassword,
   });
   await user.save();
@@ -48,13 +48,14 @@ app.post("/auth", async (req, res) => {
     return res.sendStatus(401);
   }
   //hash passwords never in plain text
-  if (req.body.password !== user.password) {
-    return res.sendStatus(403);
+  console.log(await bcrypt.compare(req.body.password, user.password))
+  if (!(await bcrypt.compare(req.body.password, user.password))) {
+    res.sendStatus(403);
   }
   user.token = uuidv4();
   await user.save();
 
-  res.send({ token: user.token });
+  res.send({ token: user.token });return 
 });
 
 //gatekeeper function unless it passes auth
