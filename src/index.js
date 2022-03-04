@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const bcrypt = require('bcryptjs');
 const { ObjectId } = require("mongodb");
 const mongoose = require("mongoose");
 //npm  uuidv4
@@ -29,6 +30,16 @@ app.use(cors());
 
 // adding morgan to log HTTP requests
 app.use(morgan("combined"));
+
+app.post("/register", async (req, res) => {
+  const newPassword = await bcrypt.hash(req.body.password, 10);
+  const user = await User.create({
+    userName: req.body.userName,
+    password: newPassword,
+  });
+  await user.save();
+  res.send({ status: "ok" });
+});
 
 //auth
 app.post("/auth", async (req, res) => {
@@ -64,7 +75,7 @@ app.get("/", async (req, res) => {
   res.send(await Profile.find());
 });
 
-app.post("/", async (req, res) => {
+app.post("/profile", async (req, res) => {
   console.log(req.body);
   const newProfile = req.body;
   const profile = new Profile(newProfile);
