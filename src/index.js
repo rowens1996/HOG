@@ -31,11 +31,59 @@ app.use(cors());
 // adding morgan to log HTTP requests
 app.use(morgan("combined"));
 
+//Register Function
+// app.post("/register", async (req, res) => {
+//   const newPassword = await bcrypt.hash(req.body.password, 10);
+//   const user = await User.create({
+//     userName: req.body.username,
+//     password: newPassword,
+//   });
+//   await user.save();
+//   res.send({ status: "ok" });
+// });
+
+
+/* //Signup Example!!
+app.post('/register', async (req, res) => {
+  const user = await User.findOne({ userName: req.body.username })
+  if(user) {
+    return res.sendStatus(401, "user already exists");
+  }
+  else {
+    const newPassword = await bcrypt.hash(req.body.password, 10);
+    const user= new User.create({
+      userName: req.body.username,
+      password: newPassword,
+      role: req.body.role 
+    })
+  await user.save()
+  res.send({message: "new user added"})
+}})
+
+
+//auth
+app.post("/auth", async (req, res) => {
+  const user = await User.findOne({ userName: req.body.username });
+  if (!user) {
+    return res.sendStatus(401);
+  }
+  //hash passwords never in plain text
+  console.log(await bcrypt.compare(req.body.password, user.password))
+  if (!(await bcrypt.compare(req.body.password, user.password))) {
+    res.sendStatus(403);
+  }
+  user.token = uuidv4();
+  await user.save();
+
+  res.send({ token: user.token });return 
+}); */
+
 app.post("/register", async (req, res) => {
   const newPassword = await bcrypt.hash(req.body.password, 10);
   const user = await User.create({
     userName: req.body.username,
     password: newPassword,
+    role: req.body.role
   });
   await user.save();
   res.send({ status: "ok" });
@@ -55,8 +103,9 @@ app.post("/auth", async (req, res) => {
   user.token = uuidv4();
   await user.save();
 
-  res.send({ token: user.token });return 
+  res.send({ token: user.token, role: user.role });return 
 });
+
 
 //gatekeeper function unless it passes auth
 
