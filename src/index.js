@@ -11,6 +11,7 @@ const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 const { Profile } = require("../models/profile");
 const { User } = require("../models/user");
+const createError = require("http-errors");
 
 const uri =
   "mongodb+srv://admin:pAsSwOrD321@dev-cluster.fcuvf.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
@@ -31,59 +32,12 @@ app.use(cors());
 // adding morgan to log HTTP requests
 app.use(morgan("combined"));
 
-//Register Function
-// app.post("/register", async (req, res) => {
-//   const newPassword = await bcrypt.hash(req.body.password, 10);
-//   const user = await User.create({
-//     userName: req.body.username,
-//     password: newPassword,
-//   });
-//   await user.save();
-//   res.send({ status: "ok" });
-// });
-
-
-/* //Signup Example!!
-app.post('/register', async (req, res) => {
-  const user = await User.findOne({ userName: req.body.username })
-  if(user) {
-    return res.sendStatus(401, "user already exists");
-  }
-  else {
-    const newPassword = await bcrypt.hash(req.body.password, 10);
-    const user= new User.create({
-      userName: req.body.username,
-      password: newPassword,
-      role: req.body.role 
-    })
-  await user.save()
-  res.send({message: "new user added"})
-}})
-
-
-//auth
-app.post("/auth", async (req, res) => {
-  const user = await User.findOne({ userName: req.body.username });
-  if (!user) {
-    return res.sendStatus(401);
-  }
-  //hash passwords never in plain text
-  console.log(await bcrypt.compare(req.body.password, user.password))
-  if (!(await bcrypt.compare(req.body.password, user.password))) {
-    res.sendStatus(403);
-  }
-  user.token = uuidv4();
-  await user.save();
-
-  res.send({ token: user.token });return 
-}); */
-
 app.post("/register", async (req, res) => {
   const newPassword = await bcrypt.hash(req.body.password, 10);
   const user = await User.create({
     userName: req.body.username,
     password: newPassword,
-    role: req.body.role
+    role: req.body.role,
   });
   await user.save();
   res.send({ status: "ok" });
@@ -103,14 +57,9 @@ app.post("/auth", async (req, res) => {
   user.token = uuidv4();
   await user.save();
 
-<<<<<<< Updated upstream
-  res.send({ token: user.token, role: user.role });return 
-=======
-  res.send({ token: user.token });
+  res.send({ token: user.token, role:user.role, username: user.userName });
   return;
->>>>>>> Stashed changes
 });
-
 
 //gatekeeper function unless it passes auth
 
@@ -128,6 +77,13 @@ app.use(async (req, res, next) => {
 // defining CRUD operations
 app.get("/", async (req, res) => {
   res.send(await Profile.find());
+});
+
+app.get("/user/:username", async (req, res, next) => {
+  await User.findOne({ userName: req.params.username }).then((item) => {
+    if (!item) next(createError(404, "No profile with that name exists."));
+    if (item) res.send(item);
+  });
 });
 
 app.post("/profile", async (req, res) => {
@@ -148,14 +104,9 @@ app.put("/:id", async (req, res) => {
   res.send({ message: "Profile updated." });
 });
 
-app.get("/search/id/:id", async (req, res) => {
-  await Profile.findOne({ _id: ObjectId(req.params.id) }).then((item) => {
-    if (!item) next(createError(404, "No profile with that id exists."));
-    if (item) res.send(item);
-  });
-});
 
-app.get("/search/location/:location", async (req, res) => {
+
+app.get("/search/location/:location", async (req, res, next) => {
   await Profile.find({ location: req.params.location }).then((item) => {
     if (!item)
       next(
