@@ -4,7 +4,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
-const bcrypt = require('bcryptjs');
+const bcrypt = require("bcryptjs");
 const { ObjectId } = require("mongodb");
 const mongoose = require("mongoose");
 //npm  uuidv4
@@ -96,14 +96,19 @@ app.post("/auth", async (req, res) => {
     return res.sendStatus(401);
   }
   //hash passwords never in plain text
-  console.log(await bcrypt.compare(req.body.password, user.password))
+  console.log(await bcrypt.compare(req.body.password, user.password));
   if (!(await bcrypt.compare(req.body.password, user.password))) {
     res.sendStatus(403);
   }
   user.token = uuidv4();
   await user.save();
 
+<<<<<<< Updated upstream
   res.send({ token: user.token, role: user.role });return 
+=======
+  res.send({ token: user.token });
+  return;
+>>>>>>> Stashed changes
 });
 
 
@@ -152,7 +157,10 @@ app.get("/search/id/:id", async (req, res) => {
 
 app.get("/search/location/:location", async (req, res) => {
   await Profile.find({ location: req.params.location }).then((item) => {
-    if (!item) next(createError(404, `There are no profiles with ${req.params.location}.`));
+    if (!item)
+      next(
+        createError(404, `There are no profiles with ${req.params.location}.`)
+      );
     if (item) res.send(item);
   });
 });
