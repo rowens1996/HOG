@@ -4,7 +4,7 @@ const profileSchema = mongoose.Schema({
   userName: String,
   fname: String,
   lname: String,
-  dob: Number,
+  dob: String,
   bio: String,
   course: String,
   employed: Boolean,

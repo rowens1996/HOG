@@ -39,8 +39,25 @@ app.post("/register", async (req, res) => {
     password: newPassword,
     role: req.body.role,
   });
-  await user.save();
-  res.send({ status: "ok" });
+  await user.save(); 
+  if(req.body.role == "student"){
+    const profile = await Profile.create({
+    userName: req.body.username,
+    fname: "",
+    lname: "",
+    dob: "",
+    bio: "",
+    course: "",
+    employed: null,
+    //skills: Array,
+    //date since employment/graduation: String,
+    linkedin: "",
+    github: "",
+    cv: "",
+    })
+    await profile.save()
+    }
+    res.send({ status: "ok" });
 });
 
 //auth
@@ -99,8 +116,15 @@ app.delete("/:id", async (req, res) => {
   res.send({ message: "Profile removed." });
 });
 
-app.put("/:id", async (req, res) => {
-  await Profile.findOneAndUpdate({ _id: ObjectId(req.params.id) }, req.body);
+app.get("/profile/:username", async (req, res, next) => {
+  await Profile.findOne({ userName: req.params.username }).then((item) => {
+    if (!item) next(createError(404, "No profile for that username exists."));
+    if (item) res.send(item)
+  });
+});
+
+app.put("/profile/:username", async (req, res) => {
+  await Profile.findOneAndUpdate({ userName: req.params.username }, req.body);
   res.send({ message: "Profile updated." });
 });
 
