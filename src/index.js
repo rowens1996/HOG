@@ -141,8 +141,8 @@ app.get("/search/location/:location", async (req, res, next) => {
 });
 
 // starting the server
-app.listen(3001, () => {
-  console.log("listening on port 3001");
+app.listen( process.env.PORT || 3001, () => {
+  console.log("listening on port");
 });
 
 var db = mongoose.connection;
