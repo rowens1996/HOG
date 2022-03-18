@@ -54,6 +54,7 @@ app.post("/register", async (req, res) => {
     linkedin: "",
     github: "",
     cv: "",
+    email: ""
     })
     await profile.save()
     }
@@ -130,20 +131,48 @@ app.put("/profile/:username", async (req, res) => {
 
 
 
-app.get("/search/location/:location", async (req, res, next) => {
-  await Profile.find({ location: req.params.location }).then((item) => {
+app.get("/search/fname/:fname", async (req, res, next) => {
+  await Profile.find({ fname: req.params.fname }).then((item) => {
     if (!item)
       next(
-        createError(404, `There are no profiles with ${req.params.location}.`)
+        createError(404, `There are no profiles with ${req.params.fname}.`)
       );
     if (item) res.send(item);
   });
 });
 
+app.post('/search/employer', async (req, res) => {
+  const { Firstname, Lastname} = req.body
+  const query = {}
+  if (Firstname) {
+    query.fname = {$regex: Firstname,$options:'i'}
+  }
+  if (Lastname) {
+    query.lname = {$regex: Lastname,$options:'i'}
+
+  }
+
+  
+  
+  // if(sCourse){
+  //   query.course = {$regex: sCourse,$options:'i'}
+  // }
+ 
+  //console.log(query)
+  res.send(await Profile.find(query).lean())
+})
+
+
+// app.get("/serach/fname/:fname", async(req, res)=>{
+//   res.send(await Profile.find({fname: req.params.fname}))
+// })
+
+
 // starting the server
 app.listen( process.env.PORT || 3001, () => {
   console.log("listening on port");
 });
+
 
 var db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
