@@ -44,22 +44,24 @@ app.post("/register", async (req, res) => {
   await user.save();
   if (req.body.role == "student") {
     const profile = await Profile.create({
-      userName: req.body.username,
-      fname: "",
-      lname: "",
-      dob: "",
-      bio: "",
-      course: "",
-      employed: null,
-      //skills: Array,
-      //date since employment/graduation: String,
-      linkedin: "",
-      github: "",
-      cv: "",
-    });
-    await profile.save();
-  }
-  res.send({ status: "ok" });
+
+    userName: req.body.username,
+    fname: "",
+    lname: "",
+    dob: "",
+    bio: "",
+    course: "",
+    employed: null,
+    //skills: Array,
+    //date since employment/graduation: String,
+    linkedin: "",
+    github: "",
+    cv: "",
+    email: ""
+    })
+    await profile.save()
+    }
+    res.send({ status: "ok" });
 });
 
 //auth
@@ -130,15 +132,45 @@ app.put("/profile/:username", async (req, res) => {
   res.send({ message: "Profile updated." });
 });
 
+
 app.get("/search/location/:location", async (req, res, next) => {
   await Profile.find({ location: req.params.location }).then((item) => {
+
     if (!item)
       next(
-        createError(404, `There are no profiles with ${req.params.location}.`)
+        createError(404, `There are no profiles with ${req.params.fname}.`)
       );
     if (item) res.send(item);
   });
 });
+
+
+app.post('/search/employer', async (req, res) => {
+  const { Firstname, Lastname} = req.body
+  const query = {}
+  if (Firstname) {
+    query.fname = {$regex: Firstname,$options:'i'}
+  }
+  if (Lastname) {
+    query.lname = {$regex: Lastname,$options:'i'}
+
+  }
+
+  
+  
+  // if(sCourse){
+  //   query.course = {$regex: sCourse,$options:'i'}
+  // }
+ 
+  //console.log(query)
+  res.send(await Profile.find(query).lean())
+})
+
+
+// app.get("/serach/fname/:fname", async(req, res)=>{
+//   res.send(await Profile.find({fname: req.params.fname}))
+// })
+
 
 //multer
 let storage = multer.memoryStorage();
@@ -170,10 +202,12 @@ app.use((error, req, res, next) => {
   return res.status(500).send(message);
 });
 
+
 // starting the server
 app.listen(process.env.PORT || 3001, () => {
   console.log("listening on port");
 });
+
 
 var db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
