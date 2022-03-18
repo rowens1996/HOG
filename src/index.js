@@ -145,9 +145,10 @@ let storage = multer.memoryStorage();
 let uploadDisk = multer({ storage: storage });
 
 app.post("/user/new", uploadDisk.single("myfile"), async (req, res) => {
-  console.log(req.file);
+  let fileType = req.file.originalname.split(".");
+  console.log(fileType[fileType.length - 1]);
   fs.writeFileSync(
-    "./uploads/" + Date.now() + req.file.originalname,
+    "./uploads/" + `${req.body.name}.${fileType[fileType.length - 1]}`,
     req.file.buffer
   );
   res.json({ message: "Upload Complete" });
