@@ -11,6 +11,8 @@ const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 const { Profile } = require("../models/profile");
 const { User } = require("../models/user");
+const multer = require("multer");
+const fs = require("fs");
 const createError = require("http-errors");
 
 const uri =
@@ -39,25 +41,25 @@ app.post("/register", async (req, res) => {
     password: newPassword,
     role: req.body.role,
   });
-  await user.save(); 
-  if(req.body.role == "student"){
+  await user.save();
+  if (req.body.role == "student") {
     const profile = await Profile.create({
-    userName: req.body.username,
-    fname: "",
-    lname: "",
-    dob: "",
-    bio: "",
-    course: "",
-    employed: null,
-    //skills: Array,
-    //date since employment/graduation: String,
-    linkedin: "",
-    github: "",
-    cv: "",
-    })
-    await profile.save()
-    }
-    res.send({ status: "ok" });
+      userName: req.body.username,
+      fname: "",
+      lname: "",
+      dob: "",
+      bio: "",
+      course: "",
+      employed: null,
+      //skills: Array,
+      //date since employment/graduation: String,
+      linkedin: "",
+      github: "",
+      cv: "",
+    });
+    await profile.save();
+  }
+  res.send({ status: "ok" });
 });
 
 //auth
@@ -74,7 +76,7 @@ app.post("/auth", async (req, res) => {
   user.token = uuidv4();
   await user.save();
 
-  res.send({ token: user.token, role:user.role, username: user.userName });
+  res.send({ token: user.token, role: user.role, username: user.userName });
   return;
 });
 
@@ -119,7 +121,7 @@ app.delete("/:id", async (req, res) => {
 app.get("/profile/:username", async (req, res, next) => {
   await Profile.findOne({ userName: req.params.username }).then((item) => {
     if (!item) next(createError(404, "No profile for that username exists."));
-    if (item) res.send(item)
+    if (item) res.send(item);
   });
 });
 
@@ -127,8 +129,6 @@ app.put("/profile/:username", async (req, res) => {
   await Profile.findOneAndUpdate({ userName: req.params.username }, req.body);
   res.send({ message: "Profile updated." });
 });
-
-
 
 app.get("/search/location/:location", async (req, res, next) => {
   await Profile.find({ location: req.params.location }).then((item) => {
@@ -140,9 +140,38 @@ app.get("/search/location/:location", async (req, res, next) => {
   });
 });
 
+//multer
+let storage = multer.memoryStorage();
+let uploadDisk = multer({ storage: storage });
+
+app.post("/user/new", uploadDisk.single("myfile"), async (req, res) => {
+  console.log(req.file);
+  fs.writeFileSync(
+    "./uploads/" + Date.now() + req.file.originalname,
+    req.file.buffer
+  );
+  res.json({ message: "Upload Complete" });
+});
+
+app.get("/user/get/:filename", (req, res) => {
+  try {
+    const path = require("path");
+    // console.log("Got Here", __dirname + "./uploads/" + req.params.filename);
+    res.sendFile(path.resolve("./uploads/" + req.params.filename));
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.use((error, req, res, next) => {
+  const message = `this is the unexpected field; -> "${error.field}`;
+  console.log(message);
+  return res.status(500).send(message);
+});
+
 // starting the server
-app.listen(3001, () => {
-  console.log("listening on port 3001");
+app.listen(process.env.PORT || 3001, () => {
+  console.log("listening on port");
 });
 
 var db = mongoose.connection;
