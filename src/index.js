@@ -142,21 +142,20 @@ app.get("/search/fname/:fname", async (req, res, next) => {
 });
 
 app.post('/search/employer', async (req, res) => {
-  const { Firstname, Lastname} = req.body
+  const { Firstname, Lastname, sSkills, sCourse} = req.body
   const query = {}
   if (Firstname) {
     query.fname = {$regex: Firstname,$options:'i'}
   }
   if (Lastname) {
     query.lname = {$regex: Lastname,$options:'i'}
-
   }
-
-  
-  
-  // if(sCourse){
-  //   query.course = {$regex: sCourse,$options:'i'}
-  // }
+  if(sSkills != ""){
+    query.skills = {$in: sSkills}
+  }
+  if(sCourse){
+    query.course = {$regex: sCourse,$options:'i'}
+  }
  
   //console.log(query)
   res.send(await Profile.find(query).lean())
