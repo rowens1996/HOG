@@ -42,7 +42,7 @@ app.post("/register", async (req, res) => {
     role: req.body.role,
   });
   await user.save();
-  if (req.body.role == "student") {
+  if (req.body.role == "Student") {
     const profile = await Profile.create({
       userName: req.body.username,
       fname: "",
@@ -56,6 +56,7 @@ app.post("/register", async (req, res) => {
       linkedin: "",
       github: "",
       cv: "",
+      avatar: "avatar_placeholder_1.jpg",
     });
     await profile.save();
   }
@@ -140,11 +141,29 @@ app.get("/search/location/:location", async (req, res, next) => {
   });
 });
 
+app.post('/search/employer', async (req, res) => {
+  const { Firstname, Lastname} = req.body
+  const query = {}
+  if (Firstname) {
+    query.fname = {$regex: Firstname,$options:'i'}
+  }
+  if (Lastname) {
+    query.lname = {$regex: Lastname,$options:'i'}
+
+  }
+  // if(sCourse){
+  //   query.course = {$regex: sCourse,$options:'i'}
+  // }
+ 
+  //console.log(query)
+  res.send(await Profile.find(query).lean())
+})
+
 //multer
 let storage = multer.memoryStorage();
 let uploadDisk = multer({ storage: storage });
 
-app.post("/user/new", uploadDisk.single("myfile"), async (req, res) => {
+app.post("/file/new", uploadDisk.single("myfile"), async (req, res) => {
   let fileType = req.file.originalname.split(".");
   console.log(fileType[fileType.length - 1]);
   fs.writeFileSync(
@@ -154,10 +173,10 @@ app.post("/user/new", uploadDisk.single("myfile"), async (req, res) => {
   res.json({ message: "Upload Complete" });
 });
 
-app.get("/user/get/:filename", (req, res) => {
+app.get("/file/get/:filename", (req, res) => {
   try {
     const path = require("path");
-    // console.log("Got Here", __dirname + "./uploads/" + req.params.filename);
+    console.log("Got Here", __dirname + "./uploads/" + req.params.filename);
     res.sendFile(path.resolve("./uploads/" + req.params.filename));
   } catch (err) {
     console.log(err);

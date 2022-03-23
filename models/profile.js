@@ -11,6 +11,7 @@ const profileSchema = mongoose.Schema({
   skills: Array,
   linkedin: String,
   github: String,
+  avatar: String,
   cv: String,
 })
 
