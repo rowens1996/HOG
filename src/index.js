@@ -40,7 +40,7 @@ app.post("/register", async (req, res) => {
     role: req.body.role,
   });
   await user.save(); 
-  if(req.body.role == "student"){
+  if(req.body.role == "Student"){
     const profile = await Profile.create({
     userName: req.body.username,
     fname: "",
@@ -49,7 +49,7 @@ app.post("/register", async (req, res) => {
     bio: "",
     course: "",
     employed: null,
-    //skills: Array,
+    skills: [],
     //date since employment/graduation: String,
     linkedin: "",
     github: "",
@@ -112,10 +112,10 @@ app.post("/profile", async (req, res) => {
   res.send({ message: "New profile added." });
 });
 
-app.delete("/:id", async (req, res) => {
-  await Profile.deleteOne({ _id: ObjectId(req.params.id) });
-  res.send({ message: "Profile removed." });
-});
+// app.delete("/:id", async (req, res) => {
+//   await Profile.deleteOne({ _id: ObjectId(req.params.id) });
+//   res.send({ message: "Profile removed." });
+// });
 
 app.get("/profile/:username", async (req, res, next) => {
   await Profile.findOne({ userName: req.params.username }).then((item) => {
@@ -126,6 +126,21 @@ app.get("/profile/:username", async (req, res, next) => {
 
 app.put("/profile/:username", async (req, res) => {
   await Profile.findOneAndUpdate({ userName: req.params.username }, req.body);
+  res.send({ message: "Profile updated." });
+});
+
+
+//CRUD FOR TDA
+
+// delete event
+app.delete("/delete/:id", async (req, res) => {
+  await Profile.deleteOne({ _id: ObjectId(req.params.id) });
+  res.send({ message: "Profile removed." });
+});
+
+//update event
+app.put("/update/:id", async (req, res) => {
+  await Profile.findOneAndUpdate({ _id: ObjectId(req.params.id) }, req.body);
   res.send({ message: "Profile updated." });
 });
 
@@ -145,7 +160,7 @@ app.post('/search/employer', async (req, res) => {
   const { Firstname, Lastname, sSkills, sCourse} = req.body
   const query = {}
   if (Firstname) {
-    query.fname = {$regex: Firstname,$options:'i'}
+    query.fname = {$regex:Firstname,$options:'i'}
   }
   if (Lastname) {
     query.lname = {$regex: Lastname,$options:'i'}
@@ -178,3 +193,5 @@ db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", function callback() {
   console.log("Database connected!");
 });
+
+

@@ -13,8 +13,7 @@ const profileSchema = mongoose.Schema({
   linkedin: String,
   github: String,
   cv: String,
-  //skills: Array,
-  //email: String
+  email: String
 })
 
 module.exports.Profile = mongoose.model('Profile', profileSchema, 'Profile')
