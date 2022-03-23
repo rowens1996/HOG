@@ -11,6 +11,8 @@ const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 const { Profile } = require("../models/profile");
 const { User } = require("../models/user");
+const multer = require("multer");
+const fs = require("fs");
 const createError = require("http-errors");
 
 const uri =
@@ -39,26 +41,30 @@ app.post("/register", async (req, res) => {
     password: newPassword,
     role: req.body.role,
   });
-  await user.save(); 
-  if(req.body.role == "Student"){
+
+  await user.save();
+  if (req.body.role == "Student") {
     const profile = await Profile.create({
-    userName: req.body.username,
-    fname: "",
-    lname: "",
-    dob: "",
-    bio: "",
-    course: "",
-    employed: null,
-    skills: [],
-    //date since employment/graduation: String,
-    linkedin: "",
-    github: "",
-    cv: "",
-    email: ""
-    })
-    await profile.save()
-    }
-    res.send({ status: "ok" });
+
+      userName: req.body.username,
+      fname: "",
+      lname: "",
+      dob: "",
+      bio: "",
+      course: "",
+      employed: null,
+      skills: [],
+      //date since employment/graduation: String,
+      linkedin: "",
+      github: "",
+      cv: "",
+      avatar: "avatar_placeholder_1.jpg",
+      email: ""
+    });
+    await profile.save();
+  }
+  res.send({ status: "ok" });
+
 });
 
 //auth
@@ -75,7 +81,7 @@ app.post("/auth", async (req, res) => {
   user.token = uuidv4();
   await user.save();
 
-  res.send({ token: user.token, role:user.role, username: user.userName });
+  res.send({ token: user.token, role: user.role, username: user.userName });
   return;
 });
 
@@ -120,7 +126,7 @@ app.post("/profile", async (req, res) => {
 app.get("/profile/:username", async (req, res, next) => {
   await Profile.findOne({ userName: req.params.username }).then((item) => {
     if (!item) next(createError(404, "No profile for that username exists."));
-    if (item) res.send(item)
+    if (item) res.send(item);
   });
 });
 
@@ -128,6 +134,7 @@ app.put("/profile/:username", async (req, res) => {
   await Profile.findOneAndUpdate({ userName: req.params.username }, req.body);
   res.send({ message: "Profile updated." });
 });
+
 
 
 //CRUD FOR TDA
@@ -146,8 +153,7 @@ app.put("/update/:id", async (req, res) => {
 
 
 
-app.get("/search/fname/:fname", async (req, res, next) => {
-  await Profile.find({ fname: req.params.fname }).then((item) => {
+
     if (!item)
       next(
         createError(404, `There are no profiles with ${req.params.fname}.`)
@@ -155,6 +161,7 @@ app.get("/search/fname/:fname", async (req, res, next) => {
     if (item) res.send(item);
   });
 });
+
 
 app.post('/search/employer', async (req, res) => {
   const { Firstname, Lastname, sSkills, sCourse} = req.body
@@ -165,25 +172,55 @@ app.post('/search/employer', async (req, res) => {
   if (Lastname) {
     query.lname = {$regex: Lastname,$options:'i'}
   }
+
   if(sSkills != ""){
     query.skills = {$in: sSkills}
   }
   if(sCourse){
     query.course = {$regex: sCourse,$options:'i'}
   }
+
+
+  
  
   //console.log(query)
   res.send(await Profile.find(query).lean())
 })
 
 
-// app.get("/serach/fname/:fname", async(req, res)=>{
-//   res.send(await Profile.find({fname: req.params.fname}))
-// })
+//multer
+let storage = multer.memoryStorage();
+let uploadDisk = multer({ storage: storage });
+
+app.post("/file/new", uploadDisk.single("myfile"), async (req, res) => {
+  let fileType = req.file.originalname.split(".");
+  console.log(fileType[fileType.length - 1]);
+  fs.writeFileSync(
+    "./uploads/" + `${req.body.name}.${fileType[fileType.length - 1]}`,
+    req.file.buffer
+  );
+  res.json({ message: "Upload Complete" });
+});
+
+app.get("/file/get/:filename", (req, res) => {
+  try {
+    const path = require("path");
+    console.log("Got Here", __dirname + "./uploads/" + req.params.filename);
+    res.sendFile(path.resolve("./uploads/" + req.params.filename));
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.use((error, req, res, next) => {
+  const message = `this is the unexpected field; -> "${error.field}`;
+  console.log(message);
+  return res.status(500).send(message);
+});
 
 
 // starting the server
-app.listen( process.env.PORT || 3001, () => {
+app.listen(process.env.PORT || 3001, () => {
   console.log("listening on port");
 });
 

@@ -12,6 +12,7 @@ const profileSchema = mongoose.Schema({
   //date since employment/graduation: String,
   linkedin: String,
   github: String,
+  avatar: String,
   cv: String,
   email: String
 })
