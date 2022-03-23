@@ -41,6 +41,7 @@ app.post("/register", async (req, res) => {
     password: newPassword,
     role: req.body.role,
   });
+
   await user.save();
   if (req.body.role == "Student") {
     const profile = await Profile.create({
@@ -52,7 +53,7 @@ app.post("/register", async (req, res) => {
       bio: "",
       course: "",
       employed: null,
-      //skills: Array,
+      skills: [],
       //date since employment/graduation: String,
       linkedin: "",
       github: "",
@@ -63,6 +64,7 @@ app.post("/register", async (req, res) => {
     await profile.save();
   }
   res.send({ status: "ok" });
+
 });
 
 //auth
@@ -116,10 +118,10 @@ app.post("/profile", async (req, res) => {
   res.send({ message: "New profile added." });
 });
 
-app.delete("/:id", async (req, res) => {
-  await Profile.deleteOne({ _id: ObjectId(req.params.id) });
-  res.send({ message: "Profile removed." });
-});
+// app.delete("/:id", async (req, res) => {
+//   await Profile.deleteOne({ _id: ObjectId(req.params.id) });
+//   res.send({ message: "Profile removed." });
+// });
 
 app.get("/profile/:username", async (req, res, next) => {
   await Profile.findOne({ userName: req.params.username }).then((item) => {
@@ -134,8 +136,23 @@ app.put("/profile/:username", async (req, res) => {
 });
 
 
-app.get("/search/location/:location", async (req, res, next) => {
-  await Profile.find({ location: req.params.location }).then((item) => {
+
+//CRUD FOR TDA
+
+// delete event
+app.delete("/delete/:id", async (req, res) => {
+  await Profile.deleteOne({ _id: ObjectId(req.params.id) });
+  res.send({ message: "Profile removed." });
+});
+
+//update event
+app.put("/update/:id", async (req, res) => {
+  await Profile.findOneAndUpdate({ _id: ObjectId(req.params.id) }, req.body);
+  res.send({ message: "Profile updated." });
+});
+
+
+
 
     if (!item)
       next(
@@ -147,19 +164,24 @@ app.get("/search/location/:location", async (req, res, next) => {
 
 
 app.post('/search/employer', async (req, res) => {
-  const { Firstname, Lastname} = req.body
+  const { Firstname, Lastname, sSkills, sCourse} = req.body
   const query = {}
   if (Firstname) {
-    query.fname = {$regex: Firstname,$options:'i'}
+    query.fname = {$regex:Firstname,$options:'i'}
   }
   if (Lastname) {
     query.lname = {$regex: Lastname,$options:'i'}
-
   }
 
-  // if(sCourse){
-  //   query.course = {$regex: sCourse,$options:'i'}
-  // }
+  if(sSkills != ""){
+    query.skills = {$in: sSkills}
+  }
+  if(sCourse){
+    query.course = {$regex: sCourse,$options:'i'}
+  }
+
+
+  
  
   //console.log(query)
   res.send(await Profile.find(query).lean())
@@ -208,3 +230,5 @@ db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", function callback() {
   console.log("Database connected!");
 });
+
+
