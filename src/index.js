@@ -152,17 +152,6 @@ app.put("/update/:id", async (req, res) => {
 });
 
 
-
-
-    if (!item)
-      next(
-        createError(404, `There are no profiles with ${req.params.fname}.`)
-      );
-    if (item) res.send(item);
-  });
-});
-
-
 app.post('/search/employer', async (req, res) => {
   const { Firstname, Lastname, sSkills, sCourse} = req.body
   const query = {}
@@ -179,10 +168,6 @@ app.post('/search/employer', async (req, res) => {
   if(sCourse){
     query.course = {$regex: sCourse,$options:'i'}
   }
-
-
-  
- 
   //console.log(query)
   res.send(await Profile.find(query).lean())
 })
