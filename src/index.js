@@ -44,6 +44,7 @@ app.post("/register", async (req, res) => {
   await user.save();
   if (req.body.role == "Student") {
     const profile = await Profile.create({
+
       userName: req.body.username,
       fname: "",
       lname: "",
@@ -57,6 +58,7 @@ app.post("/register", async (req, res) => {
       github: "",
       cv: "",
       avatar: "avatar_placeholder_1.jpg",
+      email: ""
     });
     await profile.save();
   }
@@ -131,15 +133,18 @@ app.put("/profile/:username", async (req, res) => {
   res.send({ message: "Profile updated." });
 });
 
+
 app.get("/search/location/:location", async (req, res, next) => {
   await Profile.find({ location: req.params.location }).then((item) => {
+
     if (!item)
       next(
-        createError(404, `There are no profiles with ${req.params.location}.`)
+        createError(404, `There are no profiles with ${req.params.fname}.`)
       );
     if (item) res.send(item);
   });
 });
+
 
 app.post('/search/employer', async (req, res) => {
   const { Firstname, Lastname} = req.body
@@ -151,6 +156,7 @@ app.post('/search/employer', async (req, res) => {
     query.lname = {$regex: Lastname,$options:'i'}
 
   }
+
   // if(sCourse){
   //   query.course = {$regex: sCourse,$options:'i'}
   // }
@@ -158,6 +164,7 @@ app.post('/search/employer', async (req, res) => {
   //console.log(query)
   res.send(await Profile.find(query).lean())
 })
+
 
 //multer
 let storage = multer.memoryStorage();
@@ -189,10 +196,12 @@ app.use((error, req, res, next) => {
   return res.status(500).send(message);
 });
 
+
 // starting the server
 app.listen(process.env.PORT || 3001, () => {
   console.log("listening on port");
 });
+
 
 var db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
