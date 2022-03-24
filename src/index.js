@@ -36,6 +36,11 @@ app.use(morgan("combined"));
 
 app.post("/register", async (req, res) => {
   const newPassword = await bcrypt.hash(req.body.password, 10);
+  if(req.body.role == "Employer"){
+    if(req.body.employerkey !== "employerkey"){
+      return res.sendStatus(403);
+    }
+  }
   const user = await User.create({
     userName: req.body.username,
     password: newPassword,
@@ -138,7 +143,6 @@ app.put("/profile/:username", async (req, res) => {
 });
 
 
-
 //CRUD FOR TDA
 
 // delete Profile TDA
@@ -152,8 +156,6 @@ app.put("/update/:id", async (req, res) => {
   await Profile.findOneAndUpdate({ _id: ObjectId(req.params.id) }, req.body);
   res.send({ message: "Profile updated." });
 });
-
-
 
 app.post('/search/employer', async (req, res) => {
   const { Firstname, Lastname, sSkills, sCourse, Location} = req.body
@@ -174,14 +176,9 @@ app.post('/search/employer', async (req, res) => {
   if(Location){
     query.location = {$regex: Location,$options:'i'}
   }
-
-  
-
   //console.log(query)
   res.send(await Profile.find(query).lean())
 })
-
-
 
 
 //multer
