@@ -14,7 +14,8 @@ const profileSchema = mongoose.Schema({
   github: String,
   avatar: String,
   cv: String,
-  email: String
+  email: String,
+  location: String
 })
 
 module.exports.Profile = mongoose.model('Profile', profileSchema, 'Profile')
