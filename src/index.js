@@ -36,6 +36,11 @@ app.use(morgan("combined"));
 
 app.post("/register", async (req, res) => {
   const newPassword = await bcrypt.hash(req.body.password, 10);
+  if(req.body.role == "Employer"){
+    if(req.body.employerkey !== "employerkey"){
+      return res.sendStatus(403);
+    }
+  }
   const user = await User.create({
     userName: req.body.username,
     password: newPassword,
