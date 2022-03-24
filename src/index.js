@@ -64,7 +64,9 @@ app.post("/register", async (req, res) => {
       github: "",
       cv: "",
       avatar: "avatar_placeholder_1.jpg",
-      email: ""
+      email: "",
+      location: ""
+
     });
     await profile.save();
   }
@@ -141,24 +143,22 @@ app.put("/profile/:username", async (req, res) => {
 });
 
 
-
 //CRUD FOR TDA
 
-// delete event
+// delete Profile TDA
 app.delete("/delete/:id", async (req, res) => {
   await Profile.deleteOne({ _id: ObjectId(req.params.id) });
   res.send({ message: "Profile removed." });
 });
 
-//update event
+//update profile TDA
 app.put("/update/:id", async (req, res) => {
   await Profile.findOneAndUpdate({ _id: ObjectId(req.params.id) }, req.body);
   res.send({ message: "Profile updated." });
 });
 
-
 app.post('/search/employer', async (req, res) => {
-  const { Firstname, Lastname, sSkills, sCourse} = req.body
+  const { Firstname, Lastname, sSkills, sCourse, Location} = req.body
   const query = {}
   if (Firstname) {
     query.fname = {$regex:Firstname,$options:'i'}
@@ -172,6 +172,9 @@ app.post('/search/employer', async (req, res) => {
   }
   if(sCourse){
     query.course = {$regex: sCourse,$options:'i'}
+  }
+  if(Location){
+    query.location = {$regex: Location,$options:'i'}
   }
   //console.log(query)
   res.send(await Profile.find(query).lean())
